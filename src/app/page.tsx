@@ -52,7 +52,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Full tutorial on YouTube →
+            @ Dawit Nigusu
           </a>
         </div>
       </footer>

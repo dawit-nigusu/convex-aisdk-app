@@ -25,6 +25,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { toast } from "sonner";
 
 const noteFormSchema = z.object({
   title: z.string().min(1, {
@@ -55,6 +58,8 @@ interface CreateNoteDialogProps {
 }
 
 function CreateNoteDialog({ open, onOpenChange }: CreateNoteDialogProps) {
+  const createNote = useMutation(api.notes.createNote);
+
   const form = useForm<z.infer<typeof noteFormSchema>>({
     resolver: zodResolver(noteFormSchema),
     defaultValues: {
@@ -63,10 +68,22 @@ function CreateNoteDialog({ open, onOpenChange }: CreateNoteDialogProps) {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof noteFormSchema>) {
-    // TODO: Create note from form input
-  }
+  const isSubmitting = form.formState.isSubmitting;
 
+  async function onSubmit(values: z.infer<typeof noteFormSchema>) {
+    try {
+      await createNote({
+        title: values.title,
+        body: values.body,
+      });
+      toast.success("Note Created Successfully");
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.log("Creating Note went wrong", error)
+      toast.error("Failed to create note, please try again")
+  }
+  }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -106,7 +123,9 @@ function CreateNoteDialog({ open, onOpenChange }: CreateNoteDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={isSubmitting }>
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
